@@ -1,0 +1,26 @@
+{
+  "name": "@clux/cli",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "main": "dist/index.js",
+  "bin": {
+    "clux": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@clux/core": "*",
+    "commander": "^13.0.0",
+    "chalk": "^4.1.2",
+    "cli-table3": "^0.6.5",
+    "ora": "^5.4.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  }
+}

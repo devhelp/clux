@@ -1,0 +1,51 @@
+stages:
+  - lint
+  - test
+  - build
+
+default:
+  image: node:20-alpine
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+    - packages/*/node_modules/
+
+install:
+  stage: .pre
+  script:
+    - npm ci
+  artifacts:
+    paths:
+      - node_modules/
+      - packages/*/node_modules/
+
+lint:
+  stage: lint
+  needs: [install]
+  script:
+    - npm run lint
+    - npm run format:check
+
+test:
+  stage: test
+  needs: [install]
+  script:
+    - npm run test
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    when: always
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+
+build:
+  stage: build
+  needs: [install]
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - packages/*/dist/

@@ -1,0 +1,23 @@
+{
+  "name": "@clux/web",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "node dist/server.js",
+    "watch": "tsc --watch"
+  },
+  "dependencies": {
+    "@clux/core": "*",
+    "express": "^4.21.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0",
+    "@types/express": "^5.0.0",
+    "@types/ws": "^8.5.0"
+  }
+}

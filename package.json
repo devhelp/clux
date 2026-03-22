@@ -1,0 +1,43 @@
+{
+  "name": "clux",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "description": "Clux — tmux session multiplexer with web dashboard and CLI.",
+  "workspaces": [
+    "packages/core",
+    "packages/cli",
+    "packages/web"
+  ],
+  "scripts": {
+    "build": "npm run build:core && npm run build:cli && npm run build:web",
+    "build:core": "npm run build -w packages/core",
+    "build:cli": "npm run build -w packages/cli",
+    "build:web": "npm run build -w packages/web",
+    "dev:web": "npm run dev -w packages/web",
+    "cli": "node packages/cli/dist/index.js",
+    "clean": "rm -rf packages/*/dist",
+    "lint": "eslint 'packages/*/src/**/*.ts'",
+    "lint:fix": "eslint 'packages/*/src/**/*.ts' --fix",
+    "format": "prettier --write 'packages/*/src/**/*.ts'",
+    "format:check": "prettier --check 'packages/*/src/**/*.ts'",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.6.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@vitest/coverage-v8": "^4.0.18",
+    "eslint": "^10.0.2",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.1",
+    "typescript-eslint": "^8.56.1",
+    "vitest": "^4.0.18"
+  }
+}

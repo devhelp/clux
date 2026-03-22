@@ -1,0 +1,2097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clux</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-mono/style.css">
+  <style>
+    @font-face {
+      font-family: 'JetBrainsMono NF';
+      src: url('https://cdn.jsdelivr.net/gh/ryanoasis/nerd-fonts@latest/patched-fonts/JetBrainsMono/Ligatures/Regular/JetBrainsMonoNerdFont-Regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'JetBrainsMono NF';
+      src: url('https://cdn.jsdelivr.net/gh/ryanoasis/nerd-fonts@latest/patched-fonts/JetBrainsMono/Ligatures/Bold/JetBrainsMonoNerdFont-Bold.ttf') format('truetype');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+  </style>
+  <style>
+    /* ── Radix Design System ─────────────────────────────────── */
+
+    :root {
+      /* Radix Mauve Dark (warm gray) */
+      --gray-1: #121113;
+      --gray-2: #1a191b;
+      --gray-3: #211f22;
+      --gray-4: #282528;
+      --gray-5: #2f2c30;
+      --gray-6: #383538;
+      --gray-7: #454245;
+      --gray-8: #5c585c;
+      --gray-9: #65626a;
+      --gray-10: #76737a;
+      --gray-11: #b5b2bc;
+      --gray-12: #eeeef0;
+
+      /* Radix Amber accent */
+      --accent-9: #ffb224;
+      --accent-10: #ffcb47;
+      --accent-11: #f1a10d;
+      --accent-12: #fef3dd;
+      --accent-a3: rgba(255, 178, 36, 0.08);
+      --accent-a4: rgba(255, 178, 36, 0.12);
+      --accent-a5: rgba(255, 178, 36, 0.18);
+
+      /* Radix functional colors */
+      --green-9: #46a758;
+      --green-11: #63c174;
+      --green-a3: rgba(70, 167, 88, 0.1);
+      --red-9: #e5484d;
+      --red-11: #ff6369;
+      --red-a3: rgba(229, 72, 77, 0.1);
+      --red-a5: rgba(229, 72, 77, 0.2);
+      --orange-9: #f76b15;
+      --orange-11: #ff8b3e;
+      --violet-9: #6e56cf;
+      --violet-11: #baa7ff;
+      --violet-a3: rgba(110, 86, 207, 0.12);
+
+      /* Semantic tokens */
+      --bg: var(--gray-1);
+      --surface: var(--gray-2);
+      --surface2: var(--gray-3);
+      --border: var(--gray-4);
+      --border-hover: var(--gray-6);
+      --text: var(--gray-12);
+      --text-dim: var(--gray-11);
+      --accent: var(--accent-9);
+      --accent2: var(--green-9);
+      --danger: var(--red-9);
+      --warning: var(--orange-9);
+      --radius: 6px;
+      --radius-lg: 10px;
+      --font-mono: 'Geist Mono', 'SF Mono', 'Cascadia Code', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--gray-5); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--gray-6); }
+
+    /* ── Header ──────────────────────────────────────────────── */
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 52px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      position: relative;
+    }
+
+    /* Amber accent line at top */
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent-9), var(--orange-9), var(--accent-9));
+      opacity: 0.8;
+    }
+
+    header h1 {
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    header h1 span {
+      color: var(--accent-9);
+      font-weight: 700;
+      font-family: var(--font-mono);
+      font-size: 14px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green-9);
+      display: inline-block;
+      box-shadow: 0 0 6px rgba(70, 167, 88, 0.4);
+      animation: pulse-green 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-green {
+      0%, 100% { box-shadow: 0 0 6px rgba(70, 167, 88, 0.4); }
+      50% { box-shadow: 0 0 10px rgba(70, 167, 88, 0.6); }
+    }
+
+    .status-dot.offline {
+      background: var(--red-9);
+      box-shadow: 0 0 6px rgba(229, 72, 77, 0.4);
+      animation: none;
+    }
+
+    /* ── Layout ──────────────────────────────────────────────── */
+
+    .app {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      height: calc(100vh - 52px);
+    }
+
+    /* ── Sidebar ─────────────────────────────────────────────── */
+
+    .sidebar {
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      background: var(--gray-1);
+    }
+
+    .sidebar-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sidebar-header h2 {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--gray-9);
+    }
+
+    .session-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px;
+    }
+
+    .session-card {
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      margin-bottom: 2px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .session-card:hover {
+      background: var(--gray-3);
+      border-color: var(--gray-4);
+    }
+
+    .session-card.selected {
+      background: var(--accent-a3);
+      border-color: rgba(255, 178, 36, 0.15);
+    }
+
+    .session-card.selected::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 6px;
+      bottom: 6px;
+      width: 2px;
+      border-radius: 1px;
+      background: var(--accent-9);
+    }
+
+    .session-card-name {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 4px;
+      letter-spacing: -0.01em;
+    }
+
+    .session-card-meta {
+      display: flex;
+      gap: 10px;
+      font-size: 11px;
+      color: var(--gray-9);
+    }
+
+    .badge {
+      padding: 1px 7px;
+      border-radius: 99px;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+
+    .badge.attached {
+      background: var(--green-a3);
+      color: var(--green-11);
+    }
+
+    .badge.detached {
+      background: rgba(255, 139, 62, 0.08);
+      color: var(--orange-11);
+    }
+
+    .badge.claude {
+      background: var(--violet-a3);
+      color: var(--violet-11);
+    }
+
+    .no-sessions {
+      padding: 48px 16px;
+      text-align: center;
+      color: var(--gray-9);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    /* ── Main Content ────────────────────────────────────────── */
+
+    .main {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+      background: var(--bg);
+    }
+
+    .main-empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--gray-9);
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .main-empty svg { opacity: 0.15; }
+    .main-empty div { font-size: 13px; }
+
+    /* ── Toolbar ──────────────────────────────────────────────── */
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .toolbar h3 {
+      font-size: 14px;
+      font-weight: 600;
+      flex: 1;
+      letter-spacing: -0.01em;
+    }
+
+    .pane-selector {
+      display: flex;
+      gap: 2px;
+    }
+
+    .pane-tab {
+      padding: 3px 10px;
+      border-radius: var(--radius);
+      font-size: 11px;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--gray-9);
+      transition: all 0.12s ease;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .pane-tab-close {
+      font-size: 14px;
+      line-height: 1;
+      opacity: 0;
+      transition: opacity 0.12s;
+      padding: 0 2px;
+      border-radius: 3px;
+    }
+
+    .pane-tab:hover .pane-tab-close { opacity: 0.6; }
+    .pane-tab-close:hover { opacity: 1 !important; background: rgba(255,255,255,0.1); }
+
+    .pane-tab:hover {
+      background: var(--gray-3);
+      color: var(--text);
+    }
+
+    .pane-tab.active {
+      background: var(--accent-9);
+      color: var(--gray-1);
+      border-color: var(--accent-9);
+      font-weight: 600;
+    }
+
+    /* ── Terminal Output ──────────────────────────────────────── */
+
+    .terminal-wrapper {
+      flex: 1 1 0;
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
+      padding: 8px 0 0 8px;
+    }
+
+    #terminal-container {
+      width: 100%;
+      height: 100%;
+    }
+
+    #terminal-container .xterm {
+      height: 100%;
+    }
+
+    #terminal-container .xterm-viewport {
+      height: 100% !important;
+    }
+
+    /* ── Terminal Status Bar ──────────────────────────────────── */
+
+    .terminal-status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      min-height: 30px;
+    }
+
+    .terminal-status-hint {
+      font-size: 11px;
+      color: var(--gray-9);
+      font-family: var(--font-mono);
+      flex: 1;
+    }
+
+    /* ── Buttons ──────────────────────────────────────────────── */
+
+    .btn {
+      padding: 5px 12px;
+      border-radius: var(--radius);
+      font-size: 12px;
+      font-weight: 500;
+      font-family: 'Geist', -apple-system, sans-serif;
+      cursor: pointer;
+      border: 1px solid var(--gray-5);
+      background: var(--gray-3);
+      color: var(--gray-12);
+      transition: all 0.12s ease;
+      white-space: nowrap;
+      letter-spacing: -0.01em;
+    }
+
+    .btn:hover {
+      background: var(--gray-4);
+      border-color: var(--gray-6);
+    }
+
+    .btn:active {
+      background: var(--gray-5);
+    }
+
+    .btn.primary {
+      background: var(--accent-9);
+      color: var(--gray-1);
+      border-color: var(--accent-9);
+      font-weight: 600;
+    }
+
+    .btn.primary:hover {
+      background: var(--accent-10);
+      border-color: var(--accent-10);
+    }
+
+    .btn.danger {
+      background: var(--red-a3);
+      color: var(--red-11);
+      border-color: var(--red-a5);
+    }
+
+    .btn.danger:hover {
+      background: var(--red-a5);
+    }
+
+    .btn.small { padding: 3px 9px; font-size: 11px; }
+
+    /* ── Modal ────────────────────────────────────────────────── */
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      animation: overlay-in 0.15s ease-out;
+    }
+
+    @keyframes overlay-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-overlay.hidden { display: none; }
+
+    .modal {
+      background: var(--gray-2);
+      border: 1px solid var(--gray-4);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      width: 440px;
+      max-width: 90vw;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.03);
+      animation: modal-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes modal-in {
+      from { opacity: 0; transform: translateY(8px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal h2 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--gray-11);
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 7px 10px;
+      background: var(--gray-1);
+      border: 1px solid var(--gray-4);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 13px;
+      font-family: 'Geist', -apple-system, sans-serif;
+      outline: none;
+      transition: all 0.15s ease;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--accent-9);
+      box-shadow: 0 0 0 1px var(--accent-9);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    /* ── Session Details Panel ────────────────────────────────── */
+
+    .session-details {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      gap: 20px;
+      font-size: 11px;
+      color: var(--gray-9);
+    }
+
+    .detail-item { display: flex; gap: 5px; align-items: center; }
+    .detail-label { font-weight: 600; color: var(--gray-11); }
+
+    .tag {
+      padding: 1px 6px;
+      border-radius: 99px;
+      font-size: 10px;
+      background: var(--accent-a4);
+      color: var(--accent-11);
+      cursor: default;
+      font-weight: 500;
+    }
+
+    .session-card-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+
+    /* ── Prompt Actions ──────────────────────────────────────── */
+
+    .prompt-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: var(--accent-a3);
+      border-top: 1px solid rgba(255, 178, 36, 0.1);
+      animation: prompt-slide-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      flex-wrap: wrap;
+    }
+
+    @keyframes prompt-slide-in {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .prompt-label {
+      font-size: 11px;
+      color: var(--accent-11);
+      font-weight: 600;
+      margin-right: 4px;
+    }
+
+    .prompt-hint {
+      font-size: 10px;
+      color: var(--gray-9);
+      font-style: italic;
+      margin-left: auto;
+      font-family: var(--font-mono);
+    }
+
+    .btn.prompt-yes {
+      background: var(--green-a3);
+      color: var(--green-11);
+      border-color: rgba(70, 167, 88, 0.15);
+    }
+    .btn.prompt-yes:hover { background: rgba(70, 167, 88, 0.15); }
+
+    .btn.prompt-no {
+      background: var(--red-a3);
+      color: var(--red-11);
+      border-color: var(--red-a5);
+    }
+    .btn.prompt-no:hover { background: var(--red-a5); }
+
+    .btn.prompt-always {
+      background: rgba(255, 139, 62, 0.08);
+      color: var(--orange-11);
+      border-color: rgba(255, 139, 62, 0.15);
+    }
+    .btn.prompt-always:hover { background: rgba(255, 139, 62, 0.15); }
+
+    .btn.prompt-choice {
+      background: var(--accent-a3);
+      color: var(--accent-11);
+      border-color: rgba(255, 178, 36, 0.12);
+    }
+    .btn.prompt-choice:hover { background: var(--accent-a4); }
+    .btn.prompt-choice.selected {
+      background: var(--accent-9);
+      color: var(--gray-1);
+      border-color: var(--accent-9);
+    }
+
+    /* ── Toast ────────────────────────────────────────────────── */
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--gray-3);
+      border: 1px solid var(--gray-5);
+      border-radius: var(--radius);
+      padding: 10px 16px;
+      font-size: 13px;
+      color: var(--text);
+      z-index: 200;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      animation: toast-in 0.2s cubic-bezier(0.16, 1, 0.3, 1), toast-out 0.3s ease-in 2.5s forwards;
+    }
+
+
+    @keyframes toast-in {
+      from { opacity: 0; transform: translateY(8px) scale(0.96); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes toast-out {
+      from { opacity: 1; }
+      to   { opacity: 0; }
+    }
+
+    /* ── Relay Modal ───────────────────────────────────────────── */
+
+    .relay-section {
+      margin-bottom: 12px;
+    }
+
+    .relay-section-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--gray-9);
+      margin-bottom: 8px;
+    }
+
+    .relay-pane-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .relay-pane-tile {
+      padding: 8px 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-5);
+      background: var(--gray-3);
+      cursor: pointer;
+      transition: all 0.12s ease;
+      min-width: 90px;
+      text-align: center;
+    }
+
+    .relay-pane-tile:hover:not(.disabled) {
+      border-color: var(--gray-6);
+      background: var(--gray-4);
+    }
+
+    .relay-pane-tile.selected {
+      background: var(--accent-a4);
+      border-color: var(--accent-9);
+      color: var(--accent-12);
+    }
+
+    .relay-pane-tile.disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .relay-pane-tile .tile-label {
+      font-size: 13px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .relay-pane-tile .tile-cmd {
+      font-size: 10px;
+      color: var(--gray-9);
+      margin-top: 2px;
+    }
+
+    .relay-direction {
+      text-align: center;
+      font-size: 20px;
+      color: var(--gray-7);
+      padding: 4px 0;
+      user-select: none;
+    }
+
+    .relay-mode-toggle {
+      display: flex;
+      border: 1px solid var(--gray-5);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .relay-mode-btn {
+      flex: 1;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: 'Geist', -apple-system, sans-serif;
+      background: var(--gray-3);
+      color: var(--gray-11);
+      border: none;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+
+    .relay-mode-btn:not(:last-child) {
+      border-right: 1px solid var(--gray-5);
+    }
+
+    .relay-mode-btn:hover {
+      background: var(--gray-4);
+    }
+
+    .relay-mode-btn.active {
+      background: var(--accent-a4);
+      color: var(--accent-12);
+      font-weight: 600;
+    }
+
+    .relay-preview {
+      background: var(--gray-1);
+      border: 1px solid var(--gray-4);
+      border-radius: var(--radius);
+      padding: 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.4;
+      max-height: 180px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--gray-11);
+    }
+
+    .relay-message-input {
+      width: 100%;
+      padding: 8px 10px;
+      background: var(--gray-1);
+      border: 1px solid var(--gray-4);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 13px;
+      font-family: var(--font-mono);
+      resize: vertical;
+      min-height: 80px;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .relay-message-input:focus {
+      border-color: var(--accent-9);
+      box-shadow: 0 0 0 1px var(--accent-9);
+    }
+
+    .relay-lines-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .relay-lines-row label {
+      font-size: 12px;
+      color: var(--gray-11);
+      white-space: nowrap;
+    }
+
+    .relay-lines-row input {
+      width: 60px;
+      padding: 4px 8px;
+      background: var(--gray-1);
+      border: 1px solid var(--gray-4);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 12px;
+      font-family: var(--font-mono);
+      outline: none;
+    }
+
+    .relay-lines-row input:focus {
+      border-color: var(--accent-9);
+      box-shadow: 0 0 0 1px var(--accent-9);
+    }
+
+    /* ── Settings ──────────────────────────────────────────────── */
+
+    .settings-section {
+      padding: 24px;
+      overflow: auto;
+      height: 100%;
+    }
+
+    .settings-section h3 {
+      margin-bottom: 20px;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .settings-info-box {
+      background: rgba(255, 139, 62, 0.06);
+      border: 1px solid rgba(255, 139, 62, 0.15);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-size: 12px;
+      color: var(--orange-11);
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .settings-info-box code {
+      background: var(--gray-3);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .ip-add-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .ip-add-row input {
+      flex: 1;
+      padding: 7px 10px;
+      background: var(--gray-1);
+      border: 1px solid var(--gray-4);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 13px;
+      font-family: var(--font-mono);
+      outline: none;
+      transition: all 0.15s ease;
+    }
+
+    .ip-add-row input:focus {
+      border-color: var(--accent-9);
+      box-shadow: 0 0 0 1px var(--accent-9);
+    }
+
+    .ip-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .ip-entry {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .ip-entry-addr {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .ip-list-empty {
+      padding: 24px;
+      text-align: center;
+      color: var(--gray-9);
+      font-size: 13px;
+      background: var(--surface2);
+      border: 1px dashed var(--gray-5);
+      border-radius: var(--radius);
+    }
+
+    .settings-server-info {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+      font-size: 12px;
+      color: var(--gray-9);
+    }
+
+    .settings-server-info .detail-label {
+      color: var(--gray-11);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1><img src="logo.svg" alt="Clux" style="width:36px;height:36px"><span>Clux</span></h1>
+  <div class="header-actions">
+    <button class="btn small" onclick="showSettingsUI()">Settings</button>
+    <span class="status-dot" id="ws-status"></span>
+    <span id="ws-status-text" style="font-size:11px;color:var(--gray-9);font-family:var(--font-mono)">connecting...</span>
+  </div>
+</header>
+
+<div class="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>Sessions</h2>
+      <button class="btn primary small" onclick="showCreateModal()">+ New</button>
+    </div>
+    <div class="session-list" id="session-list">
+      <div class="no-sessions">No active sessions</div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main" id="main">
+    <div class="main-empty">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="2" y="3" width="20" height="18" rx="2"/>
+        <path d="M7 9l3 3-3 3M13 15h4"/>
+      </svg>
+      <div>Select a session or create a new one</div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Session Modal -->
+<div class="modal-overlay hidden" id="create-modal">
+  <div class="modal">
+    <h2>New Session</h2>
+    <div class="form-group">
+      <label>Session Name</label>
+      <input type="text" id="new-name" placeholder="my-project" autofocus>
+    </div>
+    <div class="form-group">
+      <label>Template (optional)</label>
+      <select id="new-template" onchange="onTemplateChange()">
+        <option value="">Custom (manual config)</option>
+      </select>
+      <div id="template-desc" style="font-size:11px;color:var(--text-dim);margin-top:4px"></div>
+    </div>
+    <div class="form-group">
+      <label>Working Directory</label>
+      <input type="text" id="new-path" placeholder="/path/to/project">
+    </div>
+    <div id="custom-fields">
+      <div class="form-group">
+        <label>Command (optional)</label>
+        <input type="text" id="new-command" placeholder='e.g. claude, bash, python3'>
+      </div>
+      <div class="form-group">
+        <label>Layout</label>
+        <select id="new-layout">
+          <option value="">Default</option>
+          <option value="tiled">Tiled</option>
+          <option value="even-horizontal">Even Horizontal</option>
+          <option value="even-vertical">Even Vertical</option>
+          <option value="main-horizontal">Main Horizontal</option>
+          <option value="main-vertical">Main Vertical</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="hideCreateModal()">Cancel</button>
+      <button class="btn primary" onclick="createSession()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- Relay Modal -->
+<div class="modal-overlay hidden" id="relay-modal" onclick="if(event.target===this)hideRelayModal()">
+  <div class="modal" style="width:520px">
+    <h2>Relay Between Panes</h2>
+
+    <div class="relay-section">
+      <div class="relay-section-label">From</div>
+      <div class="relay-pane-grid" id="relay-from-grid"></div>
+    </div>
+
+    <div class="relay-direction">&darr;</div>
+
+    <div class="relay-section">
+      <div class="relay-section-label">To</div>
+      <div class="relay-pane-grid" id="relay-to-grid"></div>
+    </div>
+
+    <div class="relay-mode-toggle">
+      <button class="relay-mode-btn active" onclick="setRelayMode('capture')">Capture Output</button>
+      <button class="relay-mode-btn" onclick="setRelayMode('message')">Send Message</button>
+    </div>
+
+    <div id="relay-capture-controls">
+      <div class="relay-lines-row">
+        <label>Lines:</label>
+        <input type="number" id="relay-lines" value="50" min="1" max="500">
+        <button class="btn small" onclick="previewRelayCapture()">Preview</button>
+      </div>
+      <div class="relay-preview" id="relay-preview" style="display:none"></div>
+    </div>
+
+    <div id="relay-message-controls" style="display:none">
+      <textarea class="relay-message-input" id="relay-message" placeholder="Type a message to send to the target pane..."></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn" onclick="hideRelayModal()">Cancel</button>
+      <button class="btn primary" onclick="executeRelay()">Send Relay</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+<script>
+// ── State ─────────────────────────────────────────────────────────────
+
+let sessions = [];
+let selectedSession = null;
+let selectedPane = '0.0';
+let ws = null;
+let xterm = null;
+let fitAddon = null;
+let relayFrom = null;
+let relayTo = null;
+let relayMode = 'capture';
+
+// ── WebSocket ─────────────────────────────────────────────────────────
+
+function connectWS() {
+  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  ws = new WebSocket(`${protocol}//${location.host}`);
+
+  ws.onopen = () => {
+    document.getElementById('ws-status').className = 'status-dot';
+    document.getElementById('ws-status-text').textContent = 'connected';
+    if (selectedSession) {
+      subscribeToPane(selectedSession, selectedPane);
+      if (xterm) fitAndResize();
+    }
+  };
+
+  ws.onclose = () => {
+    document.getElementById('ws-status').className = 'status-dot offline';
+    document.getElementById('ws-status-text').textContent = 'disconnected';
+    setTimeout(connectWS, 2000);
+  };
+
+  ws.onmessage = (event) => {
+    const msg = JSON.parse(event.data);
+    if (msg.type === 'output') {
+      // Ignore stale responses from a previous pane subscription
+      if (msg.paneId && msg.paneId !== selectedPane) return;
+      if (msg.sessionName && msg.sessionName !== selectedSession) return;
+      updateTerminal(msg.content);
+    }
+  };
+}
+
+function subscribeToPane(session, pane) {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'subscribe', session, pane }));
+  }
+}
+
+function unsubscribePane() {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'unsubscribe' }));
+  }
+}
+
+// ── API ───────────────────────────────────────────────────────────────
+
+async function fetchSessions() {
+  try {
+    const res = await fetch('/api/sessions');
+    sessions = await res.json();
+    renderSessionList();
+  } catch (err) {
+    console.error('Failed to fetch sessions:', err);
+  }
+}
+
+async function createSession() {
+  const name = document.getElementById('new-name').value.trim();
+  const template = document.getElementById('new-template').value;
+
+  if (!name) return alert('Name is required');
+
+  try {
+    let res;
+    if (template) {
+      const projectPath = document.getElementById('new-path').value.trim();
+      res = await fetch('/api/sessions/from-template', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectName: name,
+          projectPath: projectPath || undefined,
+          template,
+        }),
+      });
+    } else {
+      const projectPath = document.getElementById('new-path').value.trim();
+      const command = document.getElementById('new-command').value.trim();
+      const layout = document.getElementById('new-layout').value;
+      res = await fetch('/api/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectName: name,
+          projectPath: projectPath || undefined,
+          command: command || undefined,
+          layout: layout || undefined,
+        }),
+      });
+    }
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.error);
+      return;
+    }
+
+    hideCreateModal();
+    document.getElementById('new-name').value = '';
+    document.getElementById('new-template').value = '';
+    onTemplateChange();
+    await fetchSessions();
+    selectSession(sessions.find(s => s.name.includes(name.toLowerCase().replace(/[^a-z0-9_-]/g, '-'))));
+  } catch (err) {
+    alert('Failed to create session: ' + err.message);
+  }
+}
+
+async function killSession(name) {
+  if (!confirm(`Kill session "${name}"?`)) return;
+  await fetch(`/api/sessions/${name}`, { method: 'DELETE' });
+  if (selectedSession === name) {
+    selectedSession = null;
+    renderMain();
+  }
+  await fetchSessions();
+}
+
+function focusTerminal() {
+  if (xterm) xterm.focus();
+}
+
+
+// ── Rendering ─────────────────────────────────────────────────────────
+
+function renderSessionList() {
+  const container = document.getElementById('session-list');
+
+  if (sessions.length === 0) {
+    container.innerHTML = '<div class="no-sessions">No active sessions.<br>Create one to get started.</div>';
+    return;
+  }
+
+  container.innerHTML = sessions.map(s => {
+    const totalPanes = s.windows.reduce((sum, w) => sum + w.panes.length, 0);
+    const isSelected = selectedSession === s.name;
+    const meta = s.metadata || {};
+    const tags = (meta.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
+    // Detect Claude from actual running processes across all windows/panes,
+    // not just from the stored creation command
+    const isClaude = (meta.command && meta.command.includes('claude')) ||
+      s.windows.some(w => w.panes.some(p => p.currentCommand && p.currentCommand.includes('claude')));
+
+    return `
+      <div class="session-card ${isSelected ? 'selected' : ''}" onclick="selectSession(${JSON.stringify(s).replace(/"/g, '&quot;')})">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="session-card-name">${isClaude ? '<span class="badge claude" style="margin-right:6px">Claude</span>' : ''}${escapeHtml(s.name)}</div>
+          <button class="btn danger small" onclick="event.stopPropagation();killSession('${s.name}')">Kill</button>
+        </div>
+        <div class="session-card-meta">
+          <span class="badge ${s.isAttached ? 'attached' : 'detached'}">${s.isAttached ? 'attached' : 'detached'}</span>
+          <span>${s.windows.length} win</span>
+          <span>${totalPanes} pane${totalPanes !== 1 ? 's' : ''}</span>
+        </div>
+        ${tags ? `<div class="session-card-tags">${tags}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+async function selectSession(session) {
+  unsubscribePane();
+  selectedSession = session.name;
+  selectedPane = '0.0';
+  renderSessionList();
+  renderMain(session);
+  await initTerminal();
+  subscribeToPane(selectedSession, selectedPane);
+}
+
+function selectPane(paneId) {
+  selectedPane = paneId;
+  document.querySelectorAll('.pane-tab').forEach(el => {
+    el.classList.toggle('active', el.dataset.pane === paneId);
+  });
+  if (xterm) xterm.reset();
+  renderPromptActions(null);
+  // No explicit unsubscribe needed — the server's subscribe handler
+  // cleans up the old subscription internally, which avoids destroying
+  // the control client when switching panes within the same session.
+  subscribeToPane(selectedSession, selectedPane);
+  if (xterm) fitAndResize();
+  // REST fallback: fetch content directly in case the WS subscribe
+  // response is delayed or lost due to async handler interleaving.
+  fetchPaneContent(selectedSession, selectedPane);
+}
+
+async function fetchPaneContent(session, pane) {
+  try {
+    const res = await fetch(`/api/sessions/${encodeURIComponent(session)}/capture/${encodeURIComponent(pane)}?lines=80`);
+    if (!res.ok) return;
+    const output = await res.json();
+    // Only apply if this is still the active pane (user might have switched again)
+    if (selectedSession === session && selectedPane === pane && output.content) {
+      updateTerminal(output.content);
+    }
+  } catch {}
+}
+
+function renderMain(session) {
+  const main = document.getElementById('main');
+
+  if (!session) {
+    main.innerHTML = `
+      <div class="main-empty">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="3" width="20" height="18" rx="2"/>
+          <path d="M7 9l3 3-3 3M13 15h4"/>
+        </svg>
+        <div>Select a session or create a new one</div>
+      </div>`;
+    return;
+  }
+
+  // Build pane tabs
+  const paneTabs = [];
+  for (const win of session.windows) {
+    for (const pane of win.panes) {
+      const pid = `${win.index}.${pane.index}`;
+      paneTabs.push(`
+        <div class="pane-tab ${pid === selectedPane ? 'active' : ''}"
+             data-pane="${pid}"
+             onclick="selectPane('${pid}')">
+          ${win.name}:${pane.index}
+          <span class="pane-tab-close" onclick="event.stopPropagation();selectedPane='${pid}';closeWindowUI(${win.index})" title="Close">&times;</span>
+        </div>
+      `);
+    }
+  }
+
+  main.innerHTML = `
+    <div class="toolbar">
+      <h3>${escapeHtml(session.name)}</h3>
+      <div class="pane-selector">${paneTabs.join('')}</div>
+      <button class="btn small" onclick="addWindowUI()">+ Window</button>
+      <button class="btn small" onclick="showRelayModal()">Relay</button>
+      <a class="btn small" href="/api/sessions/${encodeURIComponent(session.name)}/export" download="${session.name}.md" style="text-decoration:none">Export</a>
+    </div>
+
+    <div class="session-details">
+      <div class="detail-item">
+        <span class="detail-label">Status:</span>
+        <span class="badge ${session.isAttached ? 'attached' : 'detached'}">${session.isAttached ? 'attached' : 'detached'}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Created:</span>
+        <span>${new Date(session.createdAt).toLocaleString()}</span>
+      </div>
+      ${session.metadata?.projectPath ? `<div class="detail-item"><span class="detail-label">Path:</span><span>${escapeHtml(session.metadata.projectPath)}</span></div>` : ''}
+    </div>
+
+    <div class="terminal-wrapper">
+      <div id="terminal-container"></div>
+    </div>
+
+    <div id="prompt-actions" class="prompt-actions" style="display:none"></div>
+
+    <div class="terminal-status-bar">
+      <span class="terminal-status-hint">Terminal input active — type directly</span>
+      <button class="btn small" onclick="focusTerminal()">Focus Terminal</button>
+    </div>
+  `;
+}
+
+async function initTerminal() {
+  if (xterm) {
+    xterm.dispose();
+    xterm = null;
+    fitAddon = null;
+  }
+
+  const container = document.getElementById('terminal-container');
+  if (!container) return;
+
+  // Wait for nerd font to load so glyphs render correctly
+  try {
+    await document.fonts.load("14px 'JetBrainsMono NF'");
+  } catch {}
+
+  xterm = new Terminal({
+    theme: {
+      background: '#121113',
+      foreground: '#eeeef0',
+      cursor: '#ffb224',
+      cursorAccent: '#121113',
+      selectionBackground: 'rgba(255, 178, 36, 0.18)',
+      black: '#454245',
+      red: '#ff6369',
+      green: '#63c174',
+      yellow: '#ffb224',
+      blue: '#70b8ff',
+      magenta: '#baa7ff',
+      cyan: '#4ccba0',
+      white: '#b5b2bc',
+      brightBlack: '#65626a',
+      brightRed: '#ff8b8b',
+      brightGreen: '#7dd191',
+      brightYellow: '#ffcb47',
+      brightBlue: '#9dd2ff',
+      brightMagenta: '#d4c4ff',
+      brightCyan: '#6edcb8',
+      brightWhite: '#eeeef0',
+    },
+    fontFamily: "'JetBrainsMono NF', 'Geist Mono', 'SF Mono', 'Cascadia Code', monospace",
+    fontSize: 13,
+    lineHeight: 1.2,
+    cursorStyle: 'block',
+    cursorBlink: false,
+    cursorInactiveStyle: 'none',
+    scrollback: 1000,
+    convertEol: true,
+  });
+
+  fitAddon = new FitAddon.FitAddon();
+  xterm.loadAddon(fitAddon);
+  xterm.open(container);
+  // Delay fit() so the browser finishes layout and the container has its real width
+  requestAnimationFrame(() => { fitAndResize(); });
+
+  // Direct keyboard input → tmux pane
+  // Batch keystrokes into ~8ms windows to avoid per-char process spawns
+  let inputBuffer = '';
+  let inputFlushTimer = null;
+
+  xterm.onData((data) => {
+    if (!ws || ws.readyState !== WebSocket.OPEN || !selectedSession) return;
+    inputBuffer += data;
+    if (!inputFlushTimer) {
+      inputFlushTimer = setTimeout(() => {
+        const batch = inputBuffer;
+        inputBuffer = '';
+        inputFlushTimer = null;
+        ws.send(JSON.stringify({
+          type: 'input',
+          session: selectedSession,
+          pane: selectedPane,
+          data: batch,
+        }));
+      }, 8);
+    }
+  });
+
+  // Focus terminal immediately
+  xterm.focus();
+}
+
+function updateTerminal(content) {
+  if (!xterm) return;
+  xterm.reset();
+  const trimmed = trimTrailingEmptyLines(content);
+  xterm.write(trimmed);
+  const prompt = detectPrompt(content);
+  renderPromptActions(prompt);
+}
+
+function trimTrailingEmptyLines(text) {
+  const lines = text.split('\n');
+  while (lines.length > 1 && lines[lines.length - 1].trim() === '') {
+    lines.pop();
+  }
+  return lines.join('\n');
+}
+
+// ── Prompt Detection ────────────────────────────────────────────────
+
+let lastPromptKey = null;
+
+function stripAnsi(text) {
+  return text
+    .replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '')   // CSI sequences
+    .replace(/\x1b\][^\x07]*(?:\x07|\x1b\\)/g, '') // OSC sequences
+    .replace(/\x1b[()][0-9A-B]/g, '')          // charset
+    .replace(/\x1b\[?[0-9;]*[Hf]/g, '')       // cursor positioning
+    .replace(/\x1b[78]/g, '')                  // cursor save/restore
+    .replace(/\r/g, '');                       // carriage return
+}
+
+function detectPrompt(content) {
+  const plain = stripAnsi(content);
+  const allLines = plain.split('\n');
+  // Get last 20 non-empty lines
+  const lines = allLines.filter(l => l.trim().length > 0).slice(-20);
+  if (lines.length === 0) return null;
+
+  const tail = lines.slice(-6).join('\n').toLowerCase();
+  const tailOriginal = lines.slice(-6).join('\n');
+
+  // Priority 1: Permission prompt (allow/deny with y/n/a)
+  if ((tail.includes('allow') && tail.includes('always')) ||
+      (tail.includes('allow') && tail.includes('deny'))) {
+    return { type: 'permission', label: 'Permission Request' };
+  }
+
+  // Priority 2: Simple yes/no
+  const lastLine = lines[lines.length - 1];
+  const ynMatch = lastLine.match(/\((y\/n)\)|\[(Y\/n)\]|\[(y\/N)\]/i);
+  if (ynMatch) {
+    return { type: 'yesno', label: 'Confirmation' };
+  }
+
+  // Priority 3: Numbered choices on separate lines (e.g. "❯ 1. Yes\n   2. No\n   3. Always")
+  // Claude Code shows: " ❯ 1. Option" for selected, "   2. Option" for others
+  const choicePattern = /(?:❯\s*)?(\d+)\.\s+(.+)/;
+  const options = [];
+  let selectedNum = null;
+  for (let i = lines.length - 1; i >= Math.max(0, lines.length - 10); i--) {
+    const line = lines[i].trim();
+    const m = line.match(choicePattern);
+    if (m) {
+      const num = parseInt(m[1]);
+      const text = m[2].trim();
+      if (line.startsWith('❯')) selectedNum = num;
+      options.unshift({ num, text });
+    } else if (options.length > 0) {
+      // Stop scanning once we hit a non-option line above collected options
+      break;
+    }
+  }
+  if (options.length >= 2) {
+    return {
+      type: 'choice',
+      label: 'Select Option',
+      options: options,
+      selectedNum: selectedNum || options[0].num,
+    };
+  }
+
+  // Priority 4: Press Enter to continue
+  if (tail.includes('press enter') || tail.includes('hit enter') || tail.includes('press ↵')) {
+    return { type: 'continue', label: 'Continue' };
+  }
+
+  return null;
+}
+
+function renderPromptActions(prompt) {
+  const container = document.getElementById('prompt-actions');
+  if (!container) return;
+
+  if (!prompt) {
+    container.style.display = 'none';
+    lastPromptKey = null;
+    return;
+  }
+
+  // Avoid unnecessary re-renders
+  const key = prompt.type + ':' + (prompt.options ? prompt.options.map(o => o.text).join(',') : '');
+  if (key === lastPromptKey) return;
+  lastPromptKey = key;
+
+  container.style.display = '';
+  container.innerHTML = '';
+
+  const label = document.createElement('span');
+  label.className = 'prompt-label';
+  label.textContent = prompt.label + ':';
+  container.appendChild(label);
+
+  if (prompt.type === 'permission') {
+    container.appendChild(makeBtn('Yes', 'prompt-yes', () => sendPromptResponse('permission', 'y')));
+    container.appendChild(makeBtn('No', 'prompt-no', () => sendPromptResponse('permission', 'n')));
+    container.appendChild(makeBtn('Always', 'prompt-always', () => sendPromptResponse('permission', 'a')));
+    const hint = document.createElement('span');
+    hint.className = 'prompt-hint';
+    hint.textContent = 'y / n / a';
+    container.appendChild(hint);
+  } else if (prompt.type === 'yesno') {
+    container.appendChild(makeBtn('Yes', 'prompt-yes', () => sendPromptResponse('yesno', 'y')));
+    container.appendChild(makeBtn('No', 'prompt-no', () => sendPromptResponse('yesno', 'n')));
+    const hint = document.createElement('span');
+    hint.className = 'prompt-hint';
+    hint.textContent = 'y / n';
+    container.appendChild(hint);
+  } else if (prompt.type === 'choice') {
+    prompt.options.forEach((opt) => {
+      const isSelected = opt.num === prompt.selectedNum;
+      const btn = makeBtn(opt.num + '. ' + opt.text, 'prompt-choice' + (isSelected ? ' selected' : ''), () => {
+        sendPromptResponse('choice', { targetNum: opt.num, selectedNum: prompt.selectedNum, options: prompt.options });
+      });
+      container.appendChild(btn);
+    });
+  } else if (prompt.type === 'continue') {
+    container.appendChild(makeBtn('Continue (Enter)', 'prompt-yes', () => sendPromptResponse('continue', null)));
+    const hint = document.createElement('span');
+    hint.className = 'prompt-hint';
+    hint.textContent = 'Press Enter to continue';
+    container.appendChild(hint);
+  }
+}
+
+function makeBtn(text, className, onclick) {
+  const btn = document.createElement('button');
+  btn.className = 'btn small ' + className;
+  btn.textContent = text;
+  btn.onclick = onclick;
+  return btn;
+}
+
+function sendPromptResponse(promptType, action) {
+  if (!ws || ws.readyState !== WebSocket.OPEN || !selectedSession) return;
+
+  // Optimistic UI: hide prompt bar immediately
+  const container = document.getElementById('prompt-actions');
+  if (container) container.style.display = 'none';
+  lastPromptKey = null;
+
+  if (promptType === 'permission' || promptType === 'yesno') {
+    // Send single char without Enter
+    ws.send(JSON.stringify({
+      type: 'send',
+      session: selectedSession,
+      pane: selectedPane,
+      text: action,
+      noEnter: true,
+    }));
+  } else if (promptType === 'continue') {
+    ws.send(JSON.stringify({
+      type: 'special-key',
+      session: selectedSession,
+      pane: selectedPane,
+      key: 'Enter',
+    }));
+  } else if (promptType === 'choice') {
+    const { targetNum, selectedNum, options } = action;
+    const selectedIdx = options.findIndex(o => o.num === selectedNum);
+    const targetIdx = options.findIndex(o => o.num === targetNum);
+    const steps = targetIdx - selectedIdx;
+
+    if (steps === 0) {
+      ws.send(JSON.stringify({
+        type: 'special-key',
+        session: selectedSession,
+        pane: selectedPane,
+        key: 'Enter',
+      }));
+    } else {
+      const direction = steps > 0 ? 'Down' : 'Up';
+      const count = Math.abs(steps);
+      let sent = 0;
+      const interval = setInterval(() => {
+        ws.send(JSON.stringify({
+          type: 'special-key',
+          session: selectedSession,
+          pane: selectedPane,
+          key: direction,
+        }));
+        sent++;
+        if (sent >= count) {
+          clearInterval(interval);
+          setTimeout(() => {
+            ws.send(JSON.stringify({
+              type: 'special-key',
+              session: selectedSession,
+              pane: selectedPane,
+              key: 'Enter',
+            }));
+          }, 80);
+        }
+      }, 80);
+    }
+  }
+}
+
+// ── Window Management ─────────────────────────────────────────────────
+
+async function addWindowUI() {
+  if (!selectedSession) return;
+  const name = prompt('Window name:');
+  if (!name) return;
+  const command = prompt('Command for new window (leave empty for shell):');
+  try {
+    const res = await fetch(`/api/sessions/${selectedSession}/windows`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ windowName: name, command: command || undefined }),
+    });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error); }
+    await fetchSessions();
+    const session = sessions.find(s => s.name === selectedSession);
+    if (session) {
+      renderMain(session);
+      await initTerminal();
+      subscribeToPane(selectedSession, selectedPane);
+    }
+  } catch (err) {
+    alert('Failed to add window: ' + err.message);
+  }
+}
+
+async function closeWindowUI(windowIndex) {
+  if (!selectedSession) return;
+  const session = sessions.find(s => s.name === selectedSession);
+  if (!session) return;
+  const totalPanes = session.windows.reduce((sum, w) => sum + w.panes.length, 0);
+  if (totalPanes <= 1) { alert('Cannot close the last pane.'); return; }
+  if (!confirm('Close this pane?')) return;
+  try {
+    const res = await fetch(`/api/sessions/${selectedSession}/panes/${selectedPane}`, { method: 'DELETE' });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.error); }
+    await fetchSessions();
+    const updated = sessions.find(s => s.name === selectedSession);
+    if (updated) {
+      selectedPane = updated.windows[0]?.panes[0] ? `${updated.windows[0].index}.${updated.windows[0].panes[0].index}` : '0.0';
+      renderMain(updated);
+      await initTerminal();
+      subscribeToPane(selectedSession, selectedPane);
+    }
+  } catch (err) {
+    alert('Failed to close pane: ' + err.message);
+  }
+}
+
+// ── Relay ─────────────────────────────────────────────────────────────
+
+function showRelayModal() {
+  if (!selectedSession) return;
+  const session = sessions.find(s => s.name === selectedSession);
+  if (!session) return;
+
+  const paneIds = [];
+  for (const win of session.windows) {
+    for (const pane of win.panes) {
+      paneIds.push(`${win.index}.${pane.index}`);
+    }
+  }
+  if (paneIds.length < 2) return alert('Need at least 2 panes to relay between');
+
+  relayFrom = selectedPane;
+  relayTo = null;
+  relayMode = 'capture';
+
+  renderRelayPanes(session);
+  setRelayMode('capture');
+  document.getElementById('relay-preview').style.display = 'none';
+  document.getElementById('relay-preview').textContent = '';
+  document.getElementById('relay-message').value = '';
+  document.getElementById('relay-lines').value = '50';
+  document.getElementById('relay-modal').classList.remove('hidden');
+}
+
+function hideRelayModal() {
+  document.getElementById('relay-modal').classList.add('hidden');
+}
+
+function renderRelayPanes(session) {
+  const fromGrid = document.getElementById('relay-from-grid');
+  const toGrid = document.getElementById('relay-to-grid');
+  fromGrid.innerHTML = '';
+  toGrid.innerHTML = '';
+
+  for (const win of session.windows) {
+    for (const pane of win.panes) {
+      const pid = `${win.index}.${pane.index}`;
+      const cmd = pane.currentCommand || 'shell';
+
+      // FROM tile
+      const fromTile = document.createElement('div');
+      fromTile.className = 'relay-pane-tile' + (pid === relayFrom ? ' selected' : '');
+      fromTile.dataset.pane = pid;
+      fromTile.innerHTML = `<div class="tile-label">${escapeHtml(win.name)}:${pane.index}</div><div class="tile-cmd">${escapeHtml(cmd)}</div>`;
+      fromTile.onclick = () => selectRelayPane(pid, 'from');
+      fromGrid.appendChild(fromTile);
+
+      // TO tile
+      const toTile = document.createElement('div');
+      toTile.className = 'relay-pane-tile' + (pid === relayTo ? ' selected' : '') + (pid === relayFrom ? ' disabled' : '');
+      toTile.dataset.pane = pid;
+      toTile.innerHTML = `<div class="tile-label">${escapeHtml(win.name)}:${pane.index}</div><div class="tile-cmd">${escapeHtml(cmd)}</div>`;
+      toTile.onclick = () => { if (pid !== relayFrom) selectRelayPane(pid, 'to'); };
+      toGrid.appendChild(toTile);
+    }
+  }
+}
+
+function selectRelayPane(paneId, role) {
+  if (role === 'from') {
+    relayFrom = paneId;
+    if (relayTo === paneId) relayTo = null;
+  } else {
+    relayTo = paneId;
+  }
+  updateRelayPaneStates();
+}
+
+function updateRelayPaneStates() {
+  document.querySelectorAll('#relay-from-grid .relay-pane-tile').forEach(el => {
+    el.classList.toggle('selected', el.dataset.pane === relayFrom);
+  });
+  document.querySelectorAll('#relay-to-grid .relay-pane-tile').forEach(el => {
+    el.classList.toggle('selected', el.dataset.pane === relayTo);
+    el.classList.toggle('disabled', el.dataset.pane === relayFrom);
+  });
+}
+
+function setRelayMode(mode) {
+  relayMode = mode;
+  document.querySelectorAll('.relay-mode-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', (i === 0 && mode === 'capture') || (i === 1 && mode === 'message'));
+  });
+  document.getElementById('relay-capture-controls').style.display = mode === 'capture' ? '' : 'none';
+  document.getElementById('relay-message-controls').style.display = mode === 'message' ? '' : 'none';
+}
+
+async function previewRelayCapture() {
+  if (!relayFrom || !selectedSession) return;
+  const lines = parseInt(document.getElementById('relay-lines').value) || 50;
+  const previewEl = document.getElementById('relay-preview');
+  previewEl.style.display = '';
+  previewEl.textContent = 'Loading...';
+
+  try {
+    const res = await fetch(`/api/sessions/${encodeURIComponent(selectedSession)}/capture/${encodeURIComponent(relayFrom)}?lines=${lines}`);
+    if (!res.ok) { previewEl.textContent = 'Failed to capture'; return; }
+    const data = await res.json();
+    previewEl.textContent = stripAnsi(data.content || '(empty)');
+  } catch (err) {
+    previewEl.textContent = 'Error: ' + err.message;
+  }
+}
+
+async function executeRelay() {
+  if (!selectedSession || !relayFrom || !relayTo) {
+    return alert('Select both FROM and TO panes');
+  }
+
+  try {
+    const body = { from: relayFrom, to: relayTo };
+    if (relayMode === 'capture') {
+      body.capture = true;
+      body.lines = parseInt(document.getElementById('relay-lines').value) || 50;
+    } else {
+      const msg = document.getElementById('relay-message').value.trim();
+      if (!msg) return alert('Enter a message to send');
+      body.message = msg;
+    }
+
+    const res = await fetch(`/api/sessions/${encodeURIComponent(selectedSession)}/relay`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert('Relay failed: ' + (err.error || res.statusText));
+      return;
+    }
+
+    hideRelayModal();
+    showToast(`Relayed ${relayMode === 'capture' ? 'output' : 'message'} from ${relayFrom} to ${relayTo}`);
+  } catch (err) {
+    alert('Relay failed: ' + err.message);
+  }
+}
+
+// ── Settings ──────────────────────────────────────────────────────────
+
+async function showSettingsUI() {
+  const main = document.getElementById('main');
+  main.innerHTML = '<div style="padding:24px;color:var(--text-dim)">Loading settings...</div>';
+
+  try {
+    const res = await fetch('/api/settings');
+    const data = await res.json();
+    renderSettingsView(data);
+  } catch (err) {
+    main.innerHTML = '<div style="padding:24px;color:var(--danger)">Failed to load settings: ' + err.message + '</div>';
+  }
+}
+
+function renderSettingsView(data) {
+  const main = document.getElementById('main');
+  const { config, server: serverInfo } = data;
+  const whitelist = config.ipWhitelist || [];
+
+  const needsHostWarning = serverInfo.host === '127.0.0.1' && whitelist.length > 0;
+
+  let ipListHtml;
+  if (whitelist.length === 0) {
+    ipListHtml = '<div class="ip-list-empty">No IPs in whitelist. Only localhost can access this server.</div>';
+  } else {
+    ipListHtml = '<div class="ip-list">' + whitelist.map(ip =>
+      `<div class="ip-entry">
+        <span class="ip-entry-addr">${escapeHtml(ip)}</span>
+        <button class="btn danger small" onclick="removeWhitelistIP('${escapeHtml(ip)}')">Remove</button>
+      </div>`
+    ).join('') + '</div>';
+  }
+
+  main.innerHTML = `
+    <div class="settings-section">
+      <h3>Settings</h3>
+
+      <div class="settings-server-info">
+        <div class="detail-item">
+          <span class="detail-label">Host:</span>
+          <span style="font-family:var(--font-mono)">${escapeHtml(serverInfo.host)}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Port:</span>
+          <span style="font-family:var(--font-mono)">${serverInfo.port}</span>
+        </div>
+      </div>
+
+      ${needsHostWarning ? `
+        <div class="settings-info-box">
+          The server is bound to <code>127.0.0.1</code> (localhost only). Whitelisted IPs won't be able to connect until you start the server with <code>HOST=0.0.0.0</code> to listen on all interfaces.
+        </div>
+      ` : ''}
+
+      <h4 style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--gray-11)">IP Whitelist</h4>
+      <p style="font-size:12px;color:var(--gray-9);margin-bottom:12px">Allow specific IPs or CIDR ranges (e.g. <code style="background:var(--gray-3);padding:1px 4px;border-radius:3px;font-family:var(--font-mono);font-size:11px">192.168.1.0/24</code>) to access this server. Localhost is always allowed.</p>
+
+      <div class="ip-add-row">
+        <input type="text" id="new-ip" placeholder="e.g. 192.168.1.100 or 10.0.0.0/8" onkeydown="if(event.key==='Enter')addWhitelistIP()">
+        <button class="btn primary" onclick="addWhitelistIP()">Add IP</button>
+      </div>
+
+      <div id="ip-error" style="display:none;font-size:12px;color:var(--red-11);margin-bottom:12px"></div>
+
+      ${ipListHtml}
+    </div>`;
+}
+
+function validateIPClient(value) {
+  value = value.trim();
+  if (!value) return 'IP address is required';
+
+  if (value.includes('/')) {
+    const parts = value.split('/');
+    if (parts.length !== 2) return 'Invalid CIDR notation';
+    const [ip, prefix] = parts;
+    if (!isValidIPv4(ip)) return 'Invalid IP address in CIDR range';
+    const p = parseInt(prefix, 10);
+    if (isNaN(p) || p < 0 || p > 32) return 'CIDR prefix must be 0-32';
+    return null;
+  }
+
+  if (!isValidIPv4(value) && !isValidIPv6(value)) {
+    return 'Invalid IP address';
+  }
+  return null;
+}
+
+function isValidIPv4(ip) {
+  const parts = ip.split('.');
+  if (parts.length !== 4) return false;
+  return parts.every(p => {
+    const n = parseInt(p, 10);
+    return !isNaN(n) && n >= 0 && n <= 255 && String(n) === p;
+  });
+}
+
+function isValidIPv6(ip) {
+  // Basic IPv6 check — defer full validation to server
+  return /^[0-9a-fA-F:]+$/.test(ip) && ip.includes(':');
+}
+
+async function addWhitelistIP() {
+  const input = document.getElementById('new-ip');
+  const errorEl = document.getElementById('ip-error');
+  const ip = input.value.trim();
+
+  const clientError = validateIPClient(ip);
+  if (clientError) {
+    errorEl.textContent = clientError;
+    errorEl.style.display = '';
+    return;
+  }
+  errorEl.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/settings/whitelist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ip }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      errorEl.textContent = err.error || 'Failed to add IP';
+      errorEl.style.display = '';
+      return;
+    }
+    input.value = '';
+    showSettingsUI();
+    showToast('Added ' + ip + ' to whitelist');
+  } catch (err) {
+    errorEl.textContent = 'Network error: ' + err.message;
+    errorEl.style.display = '';
+  }
+}
+
+async function removeWhitelistIP(ip) {
+  try {
+    const res = await fetch('/api/settings/whitelist/' + encodeURIComponent(ip), {
+      method: 'DELETE',
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert('Failed to remove IP: ' + (err.error || res.statusText));
+      return;
+    }
+    showSettingsUI();
+    showToast('Removed ' + ip + ' from whitelist');
+  } catch (err) {
+    alert('Failed to remove IP: ' + err.message);
+  }
+}
+
+// ── Templates ─────────────────────────────────────────────────────────
+
+let availableTemplates = [];
+
+async function fetchTemplates() {
+  try {
+    const res = await fetch('/api/templates');
+    availableTemplates = await res.json();
+    const select = document.getElementById('new-template');
+    select.innerHTML = '<option value="">Custom (manual config)</option>';
+    for (const t of availableTemplates) {
+      const agents = t.agents?.length ? ` (${t.agents.length} agent${t.agents.length > 1 ? 's' : ''})` : '';
+      select.innerHTML += `<option value="${escapeHtml(t.name)}">${escapeHtml(t.name)}${agents}</option>`;
+    }
+  } catch (err) {
+    console.error('Failed to fetch templates:', err);
+  }
+}
+
+function onTemplateChange() {
+  const template = document.getElementById('new-template').value;
+  const customFields = document.getElementById('custom-fields');
+  const descEl = document.getElementById('template-desc');
+
+  if (template) {
+    const t = availableTemplates.find(x => x.name === template);
+    const agents = t?.agents?.length ? `\nAgents: ${t.agents.map(a => a.role).join(', ')}` : '';
+    const layout = t?.layout ? ` | Layout: ${t.layout}` : '';
+    descEl.textContent = (t?.description || '') + layout + agents;
+    customFields.style.display = 'none';
+  } else {
+    descEl.textContent = '';
+    customFields.style.display = '';
+  }
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────
+
+function showCreateModal() {
+  fetchTemplates();
+  document.getElementById('create-modal').classList.remove('hidden');
+  document.getElementById('new-name').focus();
+}
+
+function hideCreateModal() {
+  document.getElementById('create-modal').classList.add('hidden');
+}
+
+// Close modals on Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    hideCreateModal();
+    hideRelayModal();
+  }
+});
+
+// ── Util ──────────────────────────────────────────────────────────────
+
+function showToast(message) {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = message;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ── Resize & Visibility ───────────────────────────────────────────────
+
+function fitAndResize() {
+  if (!fitAddon || !xterm) return;
+  fitAddon.fit();
+  if (ws && ws.readyState === WebSocket.OPEN && selectedSession) {
+    ws.send(JSON.stringify({
+      type: 'resize',
+      session: selectedSession,
+      pane: selectedPane,
+      cols: xterm.cols,
+      rows: xterm.rows,
+    }));
+  }
+}
+
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+  if (resizeTimer) clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(fitAndResize, 100);
+});
+
+// Re-render terminal canvas when switching back from another tab/window.
+// xterm.js uses canvas which may not repaint while hidden.
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && xterm && fitAddon) {
+    fitAndResize();
+    xterm.refresh(0, xterm.rows - 1);
+  }
+});
+
+window.addEventListener('focus', () => {
+  if (xterm && fitAddon) {
+    fitAndResize();
+    xterm.refresh(0, xterm.rows - 1);
+  }
+});
+
+// ── Init ──────────────────────────────────────────────────────────────
+
+connectWS();
+fetchSessions();
+setInterval(fetchSessions, 5000); // Poll session list every 5s
+</script>
+</body>
+</html>
