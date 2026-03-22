@@ -195,14 +195,8 @@ export function setupWebSocket(server: Server, manager: TmuxSessionManager): voi
             break;
           }
           case 'resize': {
-            if (msg.session && msg.cols && msg.rows) {
-              await manager.resizePane(
-                msg.session,
-                msg.pane || '0.0',
-                Math.max(1, Math.floor(msg.cols)),
-                Math.max(1, Math.floor(msg.rows)),
-              );
-            }
+            // Resize disabled — GUI is read-only and should not
+            // affect terminal size for other attached clients.
             break;
           }
         }
