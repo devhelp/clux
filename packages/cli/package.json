@@ -1,11 +1,16 @@
 {
   "name": "@clux/cli",
   "version": "0.1.0",
-  "private": true,
   "license": "MIT",
   "main": "dist/index.js",
   "bin": {
     "clux": "dist/index.js"
+  },
+  "files": ["dist"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/michalsikora/clux.git",
+    "directory": "packages/cli"
   },
   "scripts": {
     "build": "tsc",
@@ -13,7 +18,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@clux/core": "*",
+    "@clux/core": "0.1.0",
     "commander": "^13.0.0",
     "chalk": "^4.1.2",
     "cli-table3": "^0.6.5",

@@ -33,7 +33,9 @@ describe('buildSessionName', () => {
   });
 
   it('generates name from path when no name provided', () => {
-    expect(buildSessionName(undefined, '/home/user/projects/clux')).toBe('claude_h-u-projects-clux');
+    expect(buildSessionName(undefined, '/home/user/projects/clux')).toBe(
+      'claude_h-u-projects-clux',
+    );
   });
 
   it('generates name for short paths', () => {
