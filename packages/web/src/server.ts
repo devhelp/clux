@@ -11,7 +11,7 @@ const server = http.createServer(app);
 const manager = new TmuxSessionManager();
 
 const PORT = parseInt(process.env.PORT || '3456');
-const HOST = process.env.HOST || '127.0.0.1';
+const HOST = process.env.HOST || '0.0.0.0';
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
