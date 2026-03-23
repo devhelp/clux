@@ -58,6 +58,7 @@ export class TmuxSessionManager extends EventEmitter {
 
     await this.tmux('new-session', '-d', '-s', name, '-c', config.projectPath);
     await this.tmux('set-option', '-t', name, 'history-limit', '50000');
+    await this.tmux('set-option', '-t', name, 'window-size', 'largest');
     await this.tmux('rename-window', '-t', `${name}:0`, 'main');
 
     if (config.command) {

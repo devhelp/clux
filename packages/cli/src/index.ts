@@ -18,6 +18,7 @@ import {
 } from './commands/session';
 import { registerRelayCommand } from './commands/relay';
 import { registerStatsCommand } from './commands/stats';
+import { registerClaudeCommand } from './commands/claude';
 
 const manager = new TmuxSessionManager();
 const program = new Command();
@@ -38,4 +39,5 @@ registerExportCommand(program, manager);
 registerMonitorCommand(program, manager);
 registerAttachCommand(program, manager);
 registerKillCommand(program, manager);
+registerClaudeCommand(program, manager);
 program.parse();
