@@ -931,18 +931,108 @@
       color: var(--gray-11);
       font-weight: 600;
     }
+
+    /* ── Hamburger Button ───────────────────────────────────── */
+
+    .hamburger-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: var(--radius);
+      transition: background 0.12s ease;
+    }
+
+    .hamburger-btn:hover {
+      background: var(--gray-3);
+    }
+
+    .hamburger-btn svg {
+      display: block;
+    }
+
+    /* ── Mobile Sidebar Overlay ─────────────────────────────── */
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 50;
+    }
+
+    .sidebar-overlay.visible {
+      display: block;
+    }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+
+    @media (max-width: 768px) {
+      .hamburger-btn {
+        display: block;
+      }
+
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 52px;
+        left: 0;
+        bottom: 0;
+        width: 300px;
+        max-width: 85vw;
+        z-index: 51;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      header {
+        padding: 0 12px;
+      }
+
+      .toolbar {
+        padding: 8px 10px;
+      }
+
+      .terminal-wrapper {
+        padding: 4px 0 0 4px;
+      }
+
+      .terminal-status-bar {
+        padding: 4px 10px;
+      }
+    }
   </style>
 </head>
 <body>
 
 <header>
-  <h1><img src="logo.svg" alt="Clux" style="width:36px;height:36px"><span>Clux</span></h1>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button class="hamburger-btn" id="hamburger-btn" onclick="toggleSidebar()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <h1><img src="logo.svg" alt="Clux" style="width:36px;height:36px"><span>Clux</span></h1>
+  </div>
   <div class="header-actions">
     <button class="btn small" onclick="showSettingsUI()">Settings</button>
     <span class="status-dot" id="ws-status"></span>
     <span id="ws-status-text" style="font-size:11px;color:var(--gray-9);font-family:var(--font-mono)">connecting...</span>
   </div>
 </header>
+
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 
 <div class="app">
   <!-- Sidebar -->
@@ -1056,6 +1146,28 @@
 <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
 <script>
+// ── Mobile Sidebar ───────────────────────────────────────────────────
+
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  const isOpen = sidebar.classList.toggle('open');
+  overlay.classList.toggle('visible', isOpen);
+}
+
+function closeSidebar() {
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('visible');
+  // Refit terminal after sidebar slide-out transition
+  setTimeout(() => { if (fitAddon && xterm) fitAndResize(); }, 300);
+}
+
+function closeSidebarIfMobile() {
+  if (window.innerWidth <= 768) {
+    closeSidebar();
+  }
+}
+
 // ── State ─────────────────────────────────────────────────────────────
 
 let sessions = [];
@@ -1229,6 +1341,7 @@ function renderSessionList() {
 }
 
 async function selectSession(session) {
+  closeSidebarIfMobile();
   unsubscribePane();
   selectedSession = session.name;
   selectedPane = '0.0';
