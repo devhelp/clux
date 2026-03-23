@@ -51,9 +51,11 @@ export class TmuxControlClient extends EventEmitter {
     await this.refreshPaneMap();
 
     return new Promise<void>((resolve, reject) => {
-      this.proc = spawn('tmux', ['-C', 'attach-session', '-t', this.sessionName], {
-        stdio: ['pipe', 'pipe', 'pipe'],
-      });
+      this.proc = spawn(
+        'tmux',
+        ['-C', 'attach-session', '-t', this.sessionName, '-r'],
+        { stdio: ['pipe', 'pipe', 'pipe'] },
+      );
 
       let settled = false;
 
