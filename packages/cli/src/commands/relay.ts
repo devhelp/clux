@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { TmuxSessionManager } from '@clux/core';
+import { TmuxSessionManager } from '@clux-cli/core';
 import chalk from 'chalk';
 
 export function registerRelayCommand(program: Command, manager: TmuxSessionManager): void {

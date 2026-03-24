@@ -1,6 +1,6 @@
 {
   "name": "clux",
-  "version": "0.1.0",
+  "version": "0.4.0",
   "private": true,
   "license": "MIT",
   "description": "Clux — tmux session multiplexer with web dashboard and CLI.",
@@ -29,6 +29,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "@clux-cli/cli": "^0.3.0",
     "better-sqlite3": "^12.6.2"
   },
   "devDependencies": {

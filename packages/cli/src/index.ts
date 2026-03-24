@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { TmuxSessionManager } from '@clux/core';
+import { TmuxSessionManager } from '@clux-cli/core';
 import { registerCreateCommand } from './commands/create';
 import { registerListCommand } from './commands/list';
 import { registerInfoCommand } from './commands/info';
@@ -19,11 +19,12 @@ import {
 import { registerRelayCommand } from './commands/relay';
 import { registerStatsCommand } from './commands/stats';
 import { registerClaudeCommand } from './commands/claude';
+import { registerWebCommand } from './commands/web';
 
 const manager = new TmuxSessionManager();
 const program = new Command();
 
-program.name('clux').description('Clux — tmux session multiplexer').version('0.1.0');
+program.name('clux').description('Clux — tmux session multiplexer').version('0.4.0');
 
 registerCreateCommand(program, manager);
 registerListCommand(program, manager);
@@ -40,4 +41,5 @@ registerMonitorCommand(program, manager);
 registerAttachCommand(program, manager);
 registerKillCommand(program, manager);
 registerClaudeCommand(program, manager);
+registerWebCommand(program, manager);
 program.parse();

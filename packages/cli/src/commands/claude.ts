@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { TmuxSessionManager } from '@clux/core';
+import { TmuxSessionManager } from '@clux-cli/core';
 import chalk from 'chalk';
 import ora from 'ora';
 import { spawn, spawnSync } from 'child_process';

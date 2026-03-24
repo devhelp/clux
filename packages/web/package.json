@@ -1,16 +1,22 @@
 {
-  "name": "@clux/web",
-  "version": "0.1.0",
+  "name": "@clux-cli/web",
+  "version": "0.4.0",
   "private": true,
   "license": "MIT",
   "main": "dist/server.js",
+  "files": ["dist"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/michalsikora/clux.git",
+    "directory": "packages/web"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "node dist/server.js",
     "watch": "tsc --watch"
   },
   "dependencies": {
-    "@clux/core": "*",
+    "@clux-cli/core": "*",
     "express": "^4.21.0",
     "ws": "^8.18.0"
   },

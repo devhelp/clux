@@ -1,6 +1,6 @@
 # Clux
 
-> **v0.1.0 — This project is under active development.** APIs, commands, and features may change without notice.
+> **v0.2.0 — This project is under active development.** APIs, commands, and features may change without notice.
 
 A tmux session multiplexer with a web dashboard and CLI. Clux lets you create, manage, and monitor multiple tmux sessions from the browser or command line. Run any command — LLM coding agents, dev servers, build scripts, or anything else. It supports inter-pane messaging, session tagging, and real-time output monitoring out of the box.
 
@@ -109,8 +109,8 @@ clux attach my-project
 clux/
   packages/
     core/       # Session management, tmux wrapper, metadata store
-    cli/        # Commander-based CLI (@clux/cli)
-    web/        # Express + WebSocket dashboard (@clux/web)
+    cli/        # Commander-based CLI (@clux-cli/cli)
+    web/        # Express + WebSocket dashboard (@clux-cli/web)
 ```
 
 This is an npm workspaces monorepo. The `core` package is a shared dependency used by both `cli` and `web`.

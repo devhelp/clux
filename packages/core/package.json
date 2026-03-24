@@ -1,10 +1,16 @@
 {
-  "name": "@clux/core",
-  "version": "0.1.0",
+  "name": "@clux-cli/core",
+  "version": "0.4.0",
   "private": true,
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/michalsikora/clux.git",
+    "directory": "packages/core"
+  },
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch"

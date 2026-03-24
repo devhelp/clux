@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { TmuxSessionManager } from '@clux/core';
+import { TmuxSessionManager } from '@clux-cli/core';
 import chalk from 'chalk';
 import ora from 'ora';
 import { printSessionDetails } from '../format';
@@ -10,7 +10,7 @@ export function registerCreateCommand(program: Command, manager: TmuxSessionMana
     .description('Create a new tmux session')
     .option('-p, --path <path>', 'Project working directory', process.cwd())
     .option('-c, --command <cmd>', 'Command to run in main pane (e.g. "claude")')
-.option('-l, --layout <layout>', 'Pane layout', 'tiled')
+    .option('-l, --layout <layout>', 'Pane layout', 'tiled')
     .option('-d, --description <text>', 'Session description')
     .option('-t, --tags <tags>', 'Comma-separated tags')
     .action(async (name: string, opts) => {

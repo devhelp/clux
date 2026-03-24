@@ -1,7 +1,7 @@
 import { WebSocketServer, WebSocket } from 'ws';
 import type { Server } from 'http';
-import { TmuxSessionManager } from '@clux/core';
-import type { PaneOutputEvent, TmuxControlClient } from '@clux/core';
+import { TmuxSessionManager } from '@clux-cli/core';
+import type { PaneOutputEvent, TmuxControlClient } from '@clux-cli/core';
 
 const subscribers = new Map<string, Set<WebSocket>>();
 const sessionMode = new Map<string, 'control' | 'poll'>();

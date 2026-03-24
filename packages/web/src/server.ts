@@ -1,7 +1,7 @@
 import express from 'express';
 import http from 'http';
 import path from 'path';
-import { TmuxSessionManager } from '@clux/core';
+import { TmuxSessionManager } from '@clux-cli/core';
 import { createSessionRoutes } from './routes/sessions';
 import { createSettingsRoutes } from './routes/settings';
 import { setupWebSocket } from './websocket/handler';

@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { TmuxSessionManager } from '@clux/core';
+import { TmuxSessionManager } from '@clux-cli/core';
 import chalk from 'chalk';
 import Table from 'cli-table3';
 import { formatRelativeTime } from '../format';
