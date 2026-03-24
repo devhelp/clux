@@ -14,7 +14,7 @@ const PORT = parseInt(process.env.PORT || '3456');
 const HOST = process.env.HOST || '127.0.0.1';
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(createSessionRoutes(manager));
 app.use(createSettingsRoutes({ host: HOST, port: PORT }));

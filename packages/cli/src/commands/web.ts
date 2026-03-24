@@ -10,7 +10,6 @@ export function registerWebCommand(program: Command, _manager: TmuxSessionManage
     .action((opts) => {
       process.env.PORT = opts.port;
       process.env.HOST = opts.host;
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
       require('@clux-cli/web/dist/server');
     });
 }
