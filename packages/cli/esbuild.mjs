@@ -4,6 +4,23 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const workspaceResolve = {
+  name: 'workspace-resolve',
+  setup(build) {
+    build.onResolve({ filter: /^@clux-cli\// }, (args) => {
+      if (args.path === '@clux-cli/core') {
+        return { path: path.resolve(__dirname, '../core/dist/index.js') };
+      }
+      if (
+        args.path === '@clux-cli/web' ||
+        args.path === '@clux-cli/web/dist/server'
+      ) {
+        return { path: path.resolve(__dirname, '../web/dist/server.js') };
+      }
+    });
+  },
+};
+
 await esbuild.build({
   entryPoints: [path.join(__dirname, 'dist/index.js')],
   bundle: true,
@@ -12,9 +29,5 @@ await esbuild.build({
   outfile: path.join(__dirname, 'dist/index.js'),
   allowOverwrite: true,
   external: ['better-sqlite3'],
-  alias: {
-    '@clux-cli/core': path.join(__dirname, '..', 'core', 'dist', 'index.js'),
-    '@clux-cli/web/dist/server': path.join(__dirname, '..', 'web', 'dist', 'server.js'),
-    '@clux-cli/web': path.join(__dirname, '..', 'web', 'dist', 'server.js'),
-  },
+  plugins: [workspaceResolve],
 });
