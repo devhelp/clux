@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { TmuxSessionManager } from '@clux-cli/core';
-import { registerCreateCommand } from './commands/create';
-import { registerListCommand } from './commands/list';
-import { registerInfoCommand } from './commands/info';
+import { TmuxSessionManager } from './core';
+import pkg from '../package.json';
+import { registerCreateCommand } from './cli/commands/create';
+import { registerListCommand } from './cli/commands/list';
+import { registerInfoCommand } from './cli/commands/info';
 import {
   registerTagCommand,
   registerDescribeCommand,
@@ -15,16 +16,16 @@ import {
   registerExportCommand,
   registerMonitorCommand,
   registerWindowCommands,
-} from './commands/session';
-import { registerRelayCommand } from './commands/relay';
-import { registerStatsCommand } from './commands/stats';
-import { registerClaudeCommand } from './commands/claude';
-import { registerWebCommand } from './commands/web';
+} from './cli/commands/session';
+import { registerRelayCommand } from './cli/commands/relay';
+import { registerStatsCommand } from './cli/commands/stats';
+import { registerClaudeCommand } from './cli/commands/claude';
+import { registerWebCommand } from './cli/commands/web';
 
 const manager = new TmuxSessionManager();
 const program = new Command();
 
-program.name('clux').description('Clux — tmux session multiplexer').version('0.4.0');
+program.name('clux').description('Clux — tmux session multiplexer').version(pkg.version);
 
 registerCreateCommand(program, manager);
 registerListCommand(program, manager);

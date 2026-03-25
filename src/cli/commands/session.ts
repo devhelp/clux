@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { TmuxSessionManager } from '@clux-cli/core';
+import { TmuxSessionManager } from '../../core';
 import chalk from 'chalk';
 import { printSessionDetails } from '../format';
 

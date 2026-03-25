@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { TmuxSessionManager } from '@clux-cli/core';
+import { TmuxSessionManager } from '../../core';
 
 export function registerWebCommand(program: Command, _manager: TmuxSessionManager) {
   program
@@ -10,6 +10,6 @@ export function registerWebCommand(program: Command, _manager: TmuxSessionManage
     .action((opts) => {
       process.env.PORT = opts.port;
       process.env.HOST = opts.host;
-      require('@clux-cli/web/dist/server');
+      require('../../web/server');
     });
 }

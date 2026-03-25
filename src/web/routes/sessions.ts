@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { TmuxSessionManager } from '@clux-cli/core';
+import { TmuxSessionManager } from '../../core';
 
 export function createSessionRoutes(manager: TmuxSessionManager): Router {
   const router = Router();

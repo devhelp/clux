@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import type { TmuxSession } from '@clux-cli/core';
+import type { TmuxSession } from '../core';
 
 export function printSessionDetails(session: TmuxSession): void {
   console.log(`\n  ${chalk.bold(session.name)}`);

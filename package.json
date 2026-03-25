@@ -1,26 +1,28 @@
 {
-  "name": "clux",
+  "name": "@clux-cli/cli",
   "version": "0.5.0",
-  "private": true,
   "license": "MIT",
   "description": "Clux — tmux session multiplexer with web dashboard and CLI.",
-  "workspaces": [
-    "packages/core",
-    "packages/cli",
-    "packages/web"
+  "main": "dist/index.js",
+  "bin": {
+    "clux": "dist/index.js"
+  },
+  "files": [
+    "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/devhelp/clux.git"
+  },
   "scripts": {
-    "build": "npm run build:core && npm run build:web && npm run build:cli",
-    "build:core": "npm run build -w packages/core",
-    "build:cli": "npm run build -w packages/cli",
-    "build:web": "npm run build -w packages/web",
-    "dev:web": "npm run dev -w packages/web",
-    "cli": "node packages/cli/dist/index.js",
-    "clean": "rm -rf packages/*/dist",
-    "lint": "eslint 'packages/*/src/**/*.ts'",
-    "lint:fix": "eslint 'packages/*/src/**/*.ts' --fix",
-    "format": "prettier --write 'packages/*/src/**/*.ts'",
-    "format:check": "prettier --check 'packages/*/src/**/*.ts'",
+    "build": "tsc && node esbuild.mjs",
+    "dev:web": "tsc && cp -r public dist/web/public && node dist/web/server.js",
+    "cli": "node dist/index.js",
+    "clean": "rm -rf dist",
+    "lint": "eslint 'src/**/*.ts'",
+    "lint:fix": "eslint 'src/**/*.ts' --fix",
+    "format": "prettier --write 'src/**/*.ts'",
+    "format:check": "prettier --check 'src/**/*.ts'",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
@@ -29,15 +31,26 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@clux-cli/cli": "^0.3.0",
-    "better-sqlite3": "^12.6.2"
+    "better-sqlite3": "^12.6.2",
+    "commander": "^13.0.0",
+    "chalk": "^4.1.2",
+    "cli-table3": "^0.6.5",
+    "ora": "^5.4.1",
+    "express": "^4.21.0",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.5.0",
     "@vitest/coverage-v8": "^4.0.18",
+    "esbuild": "^0.27.4",
     "eslint": "^10.0.2",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.8.1",
+    "typescript": "^5.7.0",
     "typescript-eslint": "^8.56.1",
     "vitest": "^4.0.18"
   }

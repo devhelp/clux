@@ -1,147 +1,165 @@
-# Clux
+<p align="center">
+  <img src="logo.svg" alt="Clux" width="120" />
+</p>
 
-> **v0.2.0 — This project is under active development.** APIs, commands, and features may change without notice.
+<h1 align="center">Clux</h1>
 
-A tmux session multiplexer with a web dashboard and CLI. Clux lets you create, manage, and monitor multiple tmux sessions from the browser or command line. Run any command — LLM coding agents, dev servers, build scripts, or anything else. It supports inter-pane messaging, session tagging, and real-time output monitoring out of the box.
+<p align="center">
+  <strong>A tmux session multiplexer for running parallel coding agents, with a web dashboard and CLI.</strong>
+</p>
 
-## Features
+<p align="center">
+  <a href="https://www.npmjs.com/package/@clux-cli/cli"><img src="https://img.shields.io/npm/v/@clux-cli/cli" alt="npm version" /></a>
+  <a href="https://github.com/devhelp/clux/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@clux-cli/cli" alt="license" /></a>
+  <img src="https://img.shields.io/node/v/@clux-cli/cli" alt="node version" />
+</p>
 
-- Web dashboard with WebSocket live updates
-- Real-time monitoring of pane output
-- Create and manage tmux sessions running any command
-- Send input and capture output from any pane without attaching
-- Relay messages between panes
-- Tag, search, and describe sessions with persistent metadata (SQLite)
-- Export sessions to Markdown
-
-## Prerequisites
-
-- Node.js >= 18
-- tmux
+Clux wraps tmux into a programmable session manager designed for running multiple Claude Code instances (or any command) in parallel. It pairs a full-featured CLI with a browser dashboard that streams live terminal output over WebSocket. Sessions are enriched with tags, descriptions, and statistics, all persisted in SQLite so nothing is lost between restarts. Built-in inter-pane messaging lets your agents coordinate without manual copy-paste.
 
 ## Installation
 
 ```bash
-git clone <repo-url> && cd clux
+npm install -g @clux-cli/cli
+```
+
+Requires **Node.js 18+** and **tmux**.
+
+<details>
+<summary>Install from source</summary>
+
+```bash
+git clone https://github.com/devhelp/clux.git && cd clux
 npm install
 npm run build
 ```
 
-## Web Dashboard
+This compiles TypeScript and bundles the CLI. You can then run it directly with `node dist/index.js` or link it globally with `npm link`.
 
-The web package provides a browser UI backed by Express and WebSocket with live session state, pane output, and session management.
+</details>
 
-```bash
-npm run dev:web
-```
+## Quick Start
 
-The dashboard runs at `http://127.0.0.1:3456` by default. Configure via environment variables (see `.env.example`).
-
-## CLI
-
-After building, you can also manage sessions from the command line:
+Start a Claude session in your current project directory:
 
 ```bash
-node packages/cli/dist/index.js --help
+clux claude
 ```
 
-Or create an alias:
+The session name is auto-generated from your directory path. If a session for this directory already exists, clux switches you into it instead of creating a duplicate.
+
+Open the web dashboard in another terminal to see all sessions at a glance:
 
 ```bash
-alias clux="node $(pwd)/packages/cli/dist/index.js"
+clux web
 ```
 
-### Quick Start
+The dashboard is available at `http://127.0.0.1:3456` and shows live terminal output, session metadata, and management controls.
 
-Create a session with an LLM agent:
+You can also manage sessions without attaching to them:
 
 ```bash
-clux create my-project --command claude --path ~/projects/my-app
+clux ls                              # list all sessions
+clux send my-session "run the tests" # send a command to a pane
+clux capture my-session --lines 100  # grab recent output
 ```
 
-List running sessions:
+## Claude Sessions
+
+The `clux claude` command is a shortcut purpose-built for Claude Code workflows. It creates a tmux session running `claude`, tags it with `claude` and `ai`, and immediately attaches. The session name is derived from the working directory — path segments are abbreviated to keep names readable (e.g. `/home/user/projects/clux` becomes `claude_h-u-projects-clux`).
 
 ```bash
-clux ls
+clux claude                       # auto-name from current directory
+clux claude my-agent              # explicit name
+clux claude --path ~/other/repo   # different working directory
+clux claude --detach              # create without attaching
+clux claude --danger              # run with --dangerously-skip-permissions
 ```
 
-Send a prompt to a running session:
+The command is idempotent: if a session with the resolved name already exists, clux switches to it rather than failing.
 
-```bash
-clux send my-project "refactor the auth module"
-```
+## CLI Commands
 
-Capture the current output:
-
-```bash
-clux capture my-project --lines 100
-```
-
-Attach to a session interactively:
-
-```bash
-clux attach my-project
-```
-
-### Commands
+Every command supports `--help` for detailed usage.
 
 | Command | Description |
 |---------|-------------|
-| `create <name>` | Create a new session. Supports `--command`, `--path`, `--layout` |
-| `list` / `ls` | List all sessions. Filter with `--tag` or `--search` |
-| `info <name>` | Detailed session info |
-| `attach <name>` | Attach to a session (Ctrl+B D to detach) |
-| `kill <name>` | Kill a session |
-| `send <name> <text>` | Send text to a pane. Use `--pane` to target a specific pane |
-| `capture <name>` | Capture pane output. `--all` for full scrollback, `-o` to write to file |
-| `monitor <name>` | Watch pane output in real-time |
-| `relay <name>` | Relay messages between panes (`--from`, `--to`, `--message` or `--capture`) |
-| `add-window <name> <win>` | Add a new window to a session |
-| `rename-window <name> <idx> <new>` | Rename a window |
-| `export <name>` | Export session to Markdown |
-| `tag <name> <tags...>` | Add or remove (`-r`) tags |
+| `create <name>` | Create a session. `--command`, `--path`, `--layout`, `--description`, `--tags` |
+| `claude [name]` | Create or switch to a Claude session. `--path`, `--detach`, `--danger` |
+| `list` / `ls` | List sessions. `--tag`, `--search` |
+| `info <name>` | Detailed session info (windows, panes, metadata, stats) |
+| `attach <name>` | Attach interactively. Ctrl+B D to detach |
+| `kill <name>` | Terminate a session |
+| `send <name> <text>` | Send text to a pane. `--pane`, `--no-enter` |
+| `capture <name>` | Capture pane output. `--lines`, `--all`, `--output` |
+| `monitor <name>` | Watch pane output live. `--pane`, `--interval` |
+| `relay <name>` | Relay between panes. `--from`, `--to`, `--message` or `--capture` |
+| `export <name>` | Export session to Markdown. `--output` |
+| `tag <name> <tags...>` | Add tags. `-r` to remove |
 | `describe <name> <text>` | Set session description |
-| `stats [name]` | Session statistics (commands sent, duration) |
+| `stats [name]` | Session statistics |
+| `add-window <name> <window>` | Add a window. `--command` |
+| `rename-window <name> <idx> <new>` | Rename a window |
+| `web` | Start the web dashboard. `--port`, `--host` |
 
-## Project Structure
+The `relay` command enables inter-agent coordination. You can capture the output of one pane and pipe it as input to another — useful when one agent produces context that a second agent needs to act on. Use `--capture` to grab recent output from the source pane, or `--message` to send a literal string.
 
+```bash
+clux relay my-session --from 0.0 --to 0.1 --capture 50
+clux relay my-session --from 0.0 --to 0.1 --message "refactor complete, review the diff"
 ```
-clux/
-  packages/
-    core/       # Session management, tmux wrapper, metadata store
-    cli/        # Commander-based CLI (@clux-cli/cli)
-    web/        # Express + WebSocket dashboard (@clux-cli/web)
-```
 
-This is an npm workspaces monorepo. The `core` package is a shared dependency used by both `cli` and `web`.
+## Web Dashboard
+
+Launch the dashboard with `clux web`. It runs at `http://127.0.0.1:3456` by default. For LAN access, bind to all interfaces with `--host 0.0.0.0`.
+
+The dashboard connects via WebSocket and renders live terminal output using xterm.js. The sidebar lists all active sessions with real-time status — sessions running Claude are detected automatically via process inspection and flagged with a distinct badge, no manual tagging required.
+
+From the browser you can create new sessions, switch between panes using tabs, send commands, relay messages between panes (with a preview of captured output before sending), export sessions to Markdown, and terminate sessions. The interface uses a dark theme built on Radix color tokens and is fully responsive, collapsing to a slide-in sidebar on mobile screens.
+
+Under the hood, the dashboard leverages tmux control mode for sub-16ms push latency when available, falling back to polling if control mode is not supported.
+
+## REST API
+
+The web server exposes a REST API for programmatic access and automation.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/sessions` | List all sessions |
+| GET | `/api/sessions/:name` | Get session details |
+| POST | `/api/sessions` | Create session |
+| DELETE | `/api/sessions/:name` | Kill session |
+| POST | `/api/sessions/:name/send` | Send text to a pane |
+| GET | `/api/sessions/:name/capture/:paneId` | Capture pane output (`?lines=N`) |
+| GET | `/api/sessions/:name/export` | Export session as Markdown |
+| POST | `/api/sessions/:name/relay` | Relay between panes |
+| POST | `/api/sessions/:name/windows` | Add a window |
+| DELETE | `/api/sessions/:name/panes/:paneId` | Kill a pane |
+| PATCH | `/api/sessions/:name/windows/:index` | Rename a window |
+| GET | `/api/settings` | Server configuration |
+
+Clients can also connect via WebSocket on the same host and port. Messages are JSON-encoded — use `subscribe` to stream live pane output, `send` to push text to a pane, and `input` to forward raw terminal keystrokes.
+
+## Architecture
+
+The codebase is a single TypeScript package organized into three logical modules under `src/`: `core/` (tmux session management, SQLite metadata store, terminal parser, process detection), `cli/` (Commander-based commands), and `web/` (Express + WebSocket dashboard). TypeScript compiles to `dist/`, then esbuild bundles everything into a single `dist/index.js` for distribution. Session metadata is stored in SQLite at `~/.clux/sessions.db` with WAL mode enabled.
+
+## Configuration
+
+The web dashboard binds to `127.0.0.1:3456` by default. Override with CLI flags (`clux web --port 8080 --host 0.0.0.0`) or environment variables (`PORT`, `HOST`). All sessions are created with a 50,000-line scrollback buffer. Supported pane layouts: `tiled`, `even-horizontal`, `even-vertical`, `main-horizontal`, `main-vertical`.
 
 ## Development
 
+For contributors working on clux itself:
+
 ```bash
-# Build everything
-npm run build
-
-# Build individual packages
-npm run build:core
-npm run build:cli
-npm run build:web
-
-# Run the web dashboard in dev mode
-npm run dev:web
-
-# Run tests
-npm test
-npm run test:watch
-npm run test:coverage
-
-# Lint and format
-npm run lint
-npm run lint:fix
-npm run format
-npm run format:check
-
-# Clean build artifacts
-npm run clean
+git clone https://github.com/devhelp/clux.git && cd clux
+npm install
+npm run build           # compile TypeScript + esbuild bundle
+npm run dev:web         # compile and run web dashboard locally
+npm test                # run tests (vitest)
+npm run test:coverage   # tests with coverage
+npm run lint            # eslint
+npm run format:check    # prettier check
 ```
 
 ## License
