@@ -38,3 +38,5 @@ coverage/
 # Temporary
 tmp/
 .tmp/
+
+CLAUDE.local.md
